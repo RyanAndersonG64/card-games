@@ -32,7 +32,7 @@ class Card:
         self.suit = suit
 
 
-suits = ['diamonds', 'hearts', 'clubs', 'spades']
+suits = {'clubs' : 0, 'diamonds' : 1, 'hearts' : 2, 'spades' : 3}
 values = {'2' : 2, '3': 3, '4': 4, '5' : 5, '6' : 6, '7' : 7, '8' : 8, '9' : 9, '10' : 10, 'J' : 11, 'Q' : 12, 'K': 13, 'A' : 14}
 #add separate blackjack values
 
@@ -55,9 +55,9 @@ def number_of_decks():
             break
 
 
+number_of_decks()
 class Deck:
     def __init__(self):
-        number_of_decks()
         self.cards = [Card(value, suit) for value in values for suit in suits]
         for i in range(1, deck_number):
             self.cards.append([Card(value, suit) for value in values for suit in suits])
@@ -98,43 +98,55 @@ def place_bet():
             continue
 
 random.shuffle(deck.cards)
-starting_cards = deck.cards
-current_cards = deck.cards
     
-
+your_wins = 0
+dealer_wins = 0
+draws = 0
 def play_high_card():
     global deck
-    global starting_cards
-    global current_cards
+    global your_wins
+    global dealer_wins
+    global draws
     place_bet()
-    your_card_selector = random.randint(0, len(current_cards) - 1)
-    your_card = current_cards[your_card_selector]
+    your_card_selector = random.randint(0, len(deck.cards) - 1)
+    your_card = deck.cards[your_card_selector]
     print(f'Your card is {your_card.value, your_card.suit}')
-    current_cards.remove(your_card)
-    dealers_card_selector = random.randint(0, len(current_cards) - 1)
-    dealers_card = current_cards[dealers_card_selector]
+    deck.cards.remove(your_card)
+    dealers_card_selector = random.randint(0, len(deck.cards) - 1)
+    dealers_card = deck.cards[dealers_card_selector]
     print(f"Dealer's card is {dealers_card.value, dealers_card.suit}")
-    current_cards.remove(dealers_card)
+    deck.cards.remove(dealers_card)
     if your_card.value > dealers_card.value:
         you.balance += bet
         print('You win!  Your balance is now ' + str(you.balance))
+        your_wins += 1
+        print(f'You have won {your_wins} hands and lost {dealer_wins} hands this session, with {draws} draws')
     elif dealers_card.value > your_card.value:
         you.balance -= bet
         print('You lose!  Your balance is now ' + str(you.balance))
+        dealer_wins += 1
+        print(f'You have won {your_wins} hands and lost {dealer_wins} hands this session, with {draws} draws')
+    elif your_card.value == dealers_card.value and your_card.suit > dealers_card.suit:
+        you.balance += bet
+        print('You win!  Your balance is now ' + str(you.balance))
+        your_wins += 1
+        print(f'You have won {your_wins} hands and lost {dealer_wins} hands this session, with {draws} draws')
+    elif your_card.value == dealers_card.value and dealers_card.suit > your_card.suit:
+        you.balance -= bet
+        print('You lose!  Your balance is now ' + str(you.balance))
+        dealer_wins += 1
+        print(f'You have won {your_wins} hands and lost {dealer_wins} hands this session, with {draws} draws')
     else:
-        print('Draw!  Your balance is still ' + str(you.balance)) #change to deciding winner based on suit
+        print('Draw!  Your balance is still ' + str(you.balance))
+        draws += 1
+        print(f'You have won {your_wins} hands and lost {dealer_wins} hands this session, with {draws} draws')
 
     if you.balance < 1:
         print('You have run out of money.  Game over.')
-    print(len(current_cards))
-    print(len(starting_cards))
-    if len(current_cards) < .5 * len(starting_cards): #doesn't work
+    print(len(deck.cards))
+    if len(deck.cards) < 26 * deck_number:
+       deck = Deck()
        random.shuffle(deck.cards)
-       #print(deck.cards)
-       starting_cards = deck.cards
-       #print(starting_cards)
-       current_cards = deck.cards
-       #print(current_cards)
     play_again = input('Enter "y" if you would like to play again.  Any other input will end the game.  ')
     if play_again == 'y' and you.balance > 0:
         play_high_card()
